@@ -1,0 +1,102 @@
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://api.trello.com/1/client.js?key=24eaab179103e245e6d9c14b443f98e7"></script>
+<style>body {
+	font-family: arial;
+	font-size: 12px;
+}
+
+#loggedout {
+	text-align: center;
+	font-size: 20px;
+	padding-top: 30px;
+}
+#loggedin {
+	display: none;
+}
+
+#header {
+	padding: 4px;
+	border-bottom: 1px solid #000;
+	background: #eee;
+}
+
+#output {
+	padding: 4px;
+}
+
+.card {
+	display: block;
+	padding: 2px;
+}
+
+
+</style>
+
+<div id="loggedout">
+	<a id="connectLink" href="#">Connect To Trello</a>
+</div>
+
+<div id="loggedin">
+	 <div id="output"></div>
+</div>
+
+<div>
+	<form>
+		<select id="board-select"></select>
+		<select id="list-select"></select>
+	</form>
+</div>
+
+<script>
+var boardSelect = $('#board-select');
+var listSelect = $('#list-select');
+
+var onAuthorize = function() {
+	updateLoggedIn();
+	$("#output").empty();
+
+
+	Trello.get("members/me/boards", function(data) {
+		$("#output").empty();
+		console.log(data)
+		$.each(data, function(ix, board) {
+			if(!board.closed)
+	            $("<option>").attr({value: board.id}).text(board.name).appendTo(boardSelect);
+		});
+	});
+	boardSelect.on('change', function() {
+		Trello.get('boards/' + this.value + '/lists', function(data) {
+	  		console.log(data);
+	  		listSelect.empty();
+	  			$.each(data, function(ix, board) {
+	            $("<option>").attr({value: list.id}).text(list.name).appendTo(listSelect);
+		});
+		});
+	});
+};
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+var updateLoggedIn = function() {
+	var isLoggedIn = Trello.authorized();
+	$("#loggedout").toggle(!isLoggedIn);
+	$("#loggedin").toggle(isLoggedIn);
+};
+
+Trello.authorize({
+	interactive:false,
+	success: onAuthorize
+});
+
+$("#connectLink")
+.click(function(){
+	Trello.authorize({
+		type: "popup",
+		success: onAuthorize
+	})
+});
+
+</script>
+
